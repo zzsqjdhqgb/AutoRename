@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>AutoRename</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      margin: 0;
+      padding: 0;
+      display: flex;
+      height: 100vh;
+    }
+    .left-panel {
+      width: 30%;
+      padding: 20px;
+      border-right: 1px solid #ccc;
+      box-sizing: border-box;
+    }
+    .right-panel {
+      width: 70%;
+      padding: 20px;
+      box-sizing: border-box;
+    }
+    .form-group {
+      margin-bottom: 15px;
+    }
+    label {
+      display: block;
+      margin-bottom: 5px;
+    }
+    input, select {
+      width: 100%;
+      padding: 8px;
+      box-sizing: border-box;
+    }
+    button {
+      padding: 10px 15px;
+      margin-right: 10px;
+      cursor: pointer;
+    }
+    video {
+      width: 100%;
+      height: auto;
+    }
+  </style>
+</head>
+<body>
+  <div class="left-panel">
+    <h2>控制栏</h2>
+    <div class="form-group">
+      <label for="date">日期:</label>
+      <input type="date" id="date">
+    </div>
+    <div class="form-group">
+      <label for="lessonNo">序号 (1-9):</label>
+      <input type="number" id="lessonNo" min="1" max="9">
+    </div>
+    <div class="form-group">
+      <label for="lessonTag">标签:</label>
+      <select id="lessonTag">
+        <option value="语文">语文</option>
+        <option value="数学">数学</option>
+        <option value="英语">英语</option>
+        <option value="物理">物理</option>
+        <option value="化学">化学</option>
+        <option value="生物">生物</option>
+        <option value="体育">体育</option>
+        <option value="思政">思政</option>
+      </select>
+    </div>
+    <button id="confirmBtn">确认</button>
+    <button id="skipBtn">跳过</button>
+  </div>
+  <div class="right-panel">
+    <h2>预览栏</h2>
+    <video id="videoPlayer" controls>
+      您的浏览器不支持 video 标签。
+    </video>
+  </div>
+
+  <script src="renderer.js"></script>
+</body>
+</html>

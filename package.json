@@ -1,0 +1,20 @@
+{
+  "name": "autorename",
+  "version": "1.0.0",
+  "description": "为专有用途定制的Windows桌面应用",
+  "main": "main.js",
+  "scripts": {
+    "start": "electron .",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs",
+  "devDependencies": {
+    "electron": "^39.2.2"
+  },
+  "dependencies": {
+    "platform-folders": "^0.6.1"
+  }
+}
