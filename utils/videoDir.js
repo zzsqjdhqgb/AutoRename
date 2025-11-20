@@ -1,5 +1,5 @@
 const path = require('path');
-const { getPath } = require('platform-folders');
+// const { getPath } = require('platform-folders');
 
 function getVideoDir() {
   // Try environment variable first
@@ -10,10 +10,12 @@ function getVideoDir() {
 
   // Use system Videos folder
   try {
-    return getPath('videos');
+    const { app } = require('electron');
+    return app.getPath('videos');
   } catch (err) {
     // Fallback to default location
-    return path.join(require('os').homedir(), 'Videos');
+    // return path.join(require('os').homedir(), 'Videos');
+    return "FAILED TO GET PATH";
   }
 }
 
