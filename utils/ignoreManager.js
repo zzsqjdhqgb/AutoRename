@@ -22,4 +22,8 @@ function addToIgnore(filename) {
   }
 }
 
-module.exports = { addToIgnore, getIgnoredFiles };
+function isIgnored(filename) {
+  return getIgnoredFiles().includes(filename);
+}
+
+module.exports = { addToIgnore, getIgnoredFiles, isIgnored };
