@@ -4,6 +4,7 @@ const lessonTagSelect = document.getElementById('lessonTag');
 const confirmBtn = document.getElementById('confirmBtn');
 const skipBtn = document.getElementById('skipBtn');
 const videoPlayer = document.getElementById('videoPlayer');
+const Swal = require('sweetalert2');
 
 let currentFile = null;
 
@@ -24,7 +25,12 @@ async function loadNextFile() {
     const videoPath = await window.electronAPI.invoke('get-video-path', currentFile);
     videoPlayer.src = videoPath;
   } else {
-    alert('No more files to process');
+    Swal.fire({
+      title: '完成!',
+      text: '没有更多文件需要处理了',
+      icon: 'success',
+      confirmButtonText: '好的'
+    });
   }
 }
 
@@ -37,9 +43,33 @@ confirmBtn.addEventListener('click', async () => {
     // Stop video playback to release file lock before moving
     videoPlayer.src = '';
     await window.electronAPI.invoke('confirm-file', { filename: currentFile, date, lessonNo, lessonTag });
+    
+    // Show success toast
+    const Toast = Swal.mixin({
+      toast: true,
+      position: 'top-end',
+      showConfirmButton: false,
+      timer: 1500,
+      timerProgressBar: true,
+      didOpen: (toast) => {
+        toast.addEventListener('mouseenter', Swal.stopTimer)
+        toast.addEventListener('mouseleave', Swal.resumeTimer)
+      }
+    });
+    
+    Toast.fire({
+      icon: 'success',
+      title: '重命名成功'
+    });
+
     loadNextFile();
   } catch (error) {
-    alert('Error: ' + error.message);
+    Swal.fire({
+      title: '错误!',
+      text: error.message,
+      icon: 'error',
+      confirmButtonText: '关闭'
+    });
   }
 });
 
