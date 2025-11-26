@@ -34,6 +34,8 @@ confirmBtn.addEventListener('click', async () => {
   const lessonTag = lessonTagSelect.value;
 
   try {
+    // Stop video playback to release file lock before moving
+    videoPlayer.src = '';
     await window.electronAPI.invoke('confirm-file', { filename: currentFile, date, lessonNo, lessonTag });
     loadNextFile();
   } catch (error) {
