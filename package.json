@@ -29,6 +29,14 @@
     "react-dom": "^19.2.0",
     "sweetalert2": "^11.26.3"
   },
+  "pnpm": {
+    "onlyBuiltDependencies": [
+      "electron",
+      "esbuild",
+      "platform-folders",
+      "sharp"
+    ]
+  },
   "build": {
     "appId": "com.autorename.app",
     "productName": "AutoRename",
