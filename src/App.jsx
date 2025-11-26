@@ -1,35 +1,36 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import Swal from 'sweetalert2';
+import Sidebar from './components/Sidebar';
+import VideoPreview from './components/VideoPreview';
 
 function App() {
   const [currentFile, setCurrentFile] = useState(null);
   const [date, setDate] = useState('');
   const [lessonNo, setLessonNo] = useState('');
   const [lessonTag, setLessonTag] = useState('语文');
-  const videoRef = useRef(null);
+  const [isProcessing, setIsProcessing] = useState(false);
 
-  useEffect(() => {
-    loadNextFile();
-  }, []);
-
-  const loadNextFile = async () => {
+  const loadNextFile = useCallback(async () => {
     try {
-      const file = await window.electronAPI.invoke('get-next-file');
-      setCurrentFile(file);
-
-      if (file) {
+      const filename = await window.electronAPI.invoke('get-next-file');
+      
+      if (filename) {
         // Extract date from filename
-        const dateMatch = file.match(/^(\d{4}-\d{2}-\d{2}) /);
+        const dateMatch = filename.match(/^(\d{4}-\d{2}-\d{2}) /);
         if (dateMatch) {
           setDate(dateMatch[1]);
         }
         
         // Get video path
-        const videoPath = await window.electronAPI.invoke('get-video-path', file);
-        if (videoRef.current) {
-          videoRef.current.src = videoPath;
-        }
+        const videoUrl = await window.electronAPI.invoke('get-video-path', filename);
+        
+        setCurrentFile({
+          name: filename,
+          path: videoUrl,
+          videoUrl: videoUrl
+        });
       } else {
+        setCurrentFile(null);
         Swal.fire({
           title: '完成!',
           text: '没有更多文件需要处理了',
@@ -39,48 +40,63 @@ function App() {
       }
     } catch (error) {
       console.error('Error loading file:', error);
+      Swal.fire({
+        title: '错误',
+        text: '加载文件失败: ' + error.message,
+        icon: 'error'
+      });
     }
-  };
+  }, []);
+
+  useEffect(() => {
+    loadNextFile();
+  }, [loadNextFile]);
 
   const handleConfirm = async () => {
-    if (!currentFile) return;
+    if (!currentFile || isProcessing) return;
+    if (!date || !lessonNo) {
+      Swal.fire({
+        title: '提示',
+        text: '请填写日期和课时序号',
+        icon: 'warning',
+        timer: 1500
+      });
+      return;
+    }
 
+    setIsProcessing(true);
     try {
-      // Stop video playback to release file lock
-      if (videoRef.current) {
-        videoRef.current.src = '';
-      }
-
-      await window.electronAPI.invoke('confirm-file', { 
-        filename: currentFile, 
+      const result = await window.electronAPI.invoke('confirm-file', { 
+        filename: currentFile.name, 
         date, 
         lessonNo, 
         lessonTag 
       });
 
-      // Show success toast
-      const Toast = Swal.mixin({
-        toast: true,
-        position: 'top-end',
-        showConfirmButton: false,
-        timer: 1500,
-        timerProgressBar: true,
-        didOpen: (toast) => {
-          toast.addEventListener('mouseenter', Swal.stopTimer)
-          toast.addEventListener('mouseleave', Swal.resumeTimer)
-        }
-      });
-      
-      Toast.fire({
-        icon: 'success',
-        title: '重命名成功'
-      });
+      if (result.success) {
+        // Show success toast
+        const Toast = Swal.mixin({
+          toast: true,
+          position: 'top-end',
+          showConfirmButton: false,
+          timer: 1500,
+          timerProgressBar: true,
+          didOpen: (toast) => {
+            toast.addEventListener('mouseenter', Swal.stopTimer)
+            toast.addEventListener('mouseleave', Swal.resumeTimer)
+          }
+        });
+        
+        Toast.fire({
+          icon: 'success',
+          title: '重命名成功'
+        });
 
-      // Reset form partially (keep date maybe? logic from original was just reload)
-      // Original logic didn't reset form explicitly, just reloaded next file which might overwrite date
-      setLessonNo(''); 
-      
-      loadNextFile();
+        setLessonNo(''); 
+        await loadNextFile();
+      } else {
+        throw new Error(result.error);
+      }
     } catch (error) {
       Swal.fire({
         title: '错误!',
@@ -88,77 +104,53 @@ function App() {
         icon: 'error',
         confirmButtonText: '关闭'
       });
+    } finally {
+      setIsProcessing(false);
     }
   };
 
   const handleSkip = async () => {
-    if (!currentFile) return;
-    await window.electronAPI.invoke('skip-file', currentFile);
-    loadNextFile();
+    if (!currentFile || isProcessing) return;
+    
+    setIsProcessing(true);
+    try {
+      await window.electronAPI.invoke('skip-file', currentFile.name);
+      await loadNextFile();
+    } catch (error) {
+      console.error('Error skipping file:', error);
+    } finally {
+      setIsProcessing(false);
+    }
   };
+
+  // Global keyboard shortcuts
+  useEffect(() => {
+    const handleKeyDown = (e) => {
+      if (isProcessing) return;
+      
+      if (e.key === 'Escape') {
+        handleSkip();
+      }
+    };
+
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [isProcessing, currentFile, handleSkip]);
 
   return (
     <div className="container">
-      <div className="left-panel">
-        <div className="app-header">
-          <img src="assets/icon.svg" alt="Logo" className="app-logo" />
-          <h1 className="app-title">AutoRename</h1>
-        </div>
-        
-        <div className="form-group">
-          <label htmlFor="date">日期</label>
-          <input 
-            type="date" 
-            id="date" 
-            value={date} 
-            onChange={(e) => setDate(e.target.value)} 
-          />
-        </div>
-        
-        <div className="form-group">
-          <label htmlFor="lessonNo">课时序号 (1-9)</label>
-          <input 
-            type="number" 
-            id="lessonNo" 
-            min="1" 
-            max="9" 
-            placeholder="例如: 1" 
-            value={lessonNo}
-            onChange={(e) => setLessonNo(e.target.value)}
-          />
-        </div>
-        
-        <div className="form-group">
-          <label htmlFor="lessonTag">课程标签</label>
-          <select 
-            id="lessonTag" 
-            value={lessonTag} 
-            onChange={(e) => setLessonTag(e.target.value)}
-          >
-            <option value="语文">语文</option>
-            <option value="数学">数学</option>
-            <option value="英语">英语</option>
-            <option value="物理">物理</option>
-            <option value="化学">化学</option>
-            <option value="生物">生物</option>
-            <option value="体育">体育</option>
-            <option value="思政">思政</option>
-          </select>
-        </div>
-
-        <div className="actions">
-          <button id="skipBtn" onClick={handleSkip}>跳过</button>
-          <button id="confirmBtn" onClick={handleConfirm}>确认重命名</button>
-        </div>
-      </div>
-
-      <div className="right-panel">
-        <div className="preview-card">
-          <video id="videoPlayer" controls ref={videoRef}>
-            您的浏览器不支持 video 标签。
-          </video>
-        </div>
-      </div>
+      <Sidebar 
+        date={date}
+        setDate={setDate}
+        lessonNo={lessonNo}
+        setLessonNo={setLessonNo}
+        lessonTag={lessonTag}
+        setLessonTag={setLessonTag}
+        onConfirm={handleConfirm}
+        onSkip={handleSkip}
+        isProcessing={isProcessing}
+      />
+      <VideoPreview currentFile={currentFile} />
     </div>
   );
 }
