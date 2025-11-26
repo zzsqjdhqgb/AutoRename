@@ -14,7 +14,9 @@
   "type": "commonjs",
   "devDependencies": {
     "electron": "^39.2.2",
-    "electron-builder": "^24.13.3"
+    "electron-builder": "^24.13.3",
+    "png-to-ico": "^3.0.1",
+    "sharp": "^0.34.5"
   },
   "dependencies": {
     "platform-folders": "^0.6.1"
@@ -27,6 +29,10 @@
     },
     "win": {
       "target": "nsis"
+    },
+    "nsis": {
+      "oneClick": false,
+      "allowToChangeInstallationDirectory": true
     }
   }
 }
