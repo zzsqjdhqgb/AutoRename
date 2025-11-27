@@ -1,6 +1,7 @@
 const { app, BrowserWindow, ipcMain, protocol, net } = require('electron');
 const path = require('path');
 const url = require('url');
+const { startServer, getServerPort } = require('./utils/videoServer');
 
 // Register scheme privileges before app is ready
 protocol.registerSchemesAsPrivileged([
@@ -38,7 +39,10 @@ function createWindow() {
   });
 }
 
-app.whenReady().then(() => {
+app.whenReady().then(async () => {
+  // Start local video server
+  await startServer();
+
   // Register 'media' protocol to serve local files
   protocol.handle('media', (request) => {
     try {
@@ -105,8 +109,6 @@ ipcMain.handle('skip-file', (event, filename) => {
 
 ipcMain.handle('get-video-path', (event, filename) => {
   const videoPath = path.join(getVideoDir(), filename);
-  // Convert backslashes to forward slashes for URL
-  const normalizedPath = videoPath.replace(/\\/g, '/');
-  // Use 3 slashes to ensure URL parsing works correctly (media:///C:/...)
-  return `media:///${normalizedPath}`;
+  const port = getServerPort();
+  return `http://localhost:${port}/video?path=${encodeURIComponent(videoPath)}`;
 });

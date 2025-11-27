@@ -70,8 +70,11 @@ function App() {
     }
 
     setIsProcessing(true);
+    // Wait for UI to update and release file lock
+    await new Promise(resolve => setTimeout(resolve, 100));
+
     try {
-      const result = await window.electronAPI.invoke('confirm-file', { 
+      const result = await window.electronAPI.invoke('confirm-file', {  
         filename: currentFile.name, 
         date, 
         lessonNo, 
@@ -123,6 +126,9 @@ function App() {
     if (!currentFile || isProcessing) return;
     
     setIsProcessing(true);
+    // Wait for UI to update and release file lock
+    await new Promise(resolve => setTimeout(resolve, 100));
+
     try {
       await window.electronAPI.invoke('skip-file', currentFile.name);
       await loadNextFile();
@@ -168,7 +174,7 @@ function App() {
         onRefresh={loadNextFile}
         isProcessing={isProcessing}
       />
-      <VideoPreview currentFile={currentFile} />
+      <VideoPreview currentFile={currentFile} isProcessing={isProcessing} />
     </div>
   );
 }

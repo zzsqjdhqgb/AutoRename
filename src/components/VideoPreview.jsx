@@ -1,6 +1,6 @@
 import React from 'react';
 
-function VideoPreview({ currentFile }) {
+function VideoPreview({ currentFile, isProcessing }) {
   if (!currentFile) {
     return (
       <div className="right-panel">
@@ -16,14 +16,21 @@ function VideoPreview({ currentFile }) {
   return (
     <div className="right-panel">
       <div className="video-container">
-        <video 
-          key={currentFile.path} // Force re-render when file changes
-          controls 
-          autoPlay 
-          src={currentFile.videoUrl}
-        >
-          您的浏览器不支持视频播放。
-        </video>
+        {!isProcessing ? (
+          <video 
+            key={currentFile.path} // Force re-render when file changes
+            controls 
+            autoPlay 
+            src={currentFile.videoUrl}
+          >
+            您的浏览器不支持视频播放。
+          </video>
+        ) : (
+          <div className="processing-state">
+            <div className="loading-spinner">🔄</div>
+            <p>正在处理文件...</p>
+          </div>
+        )}
       </div>
       <div className="file-info">
         <h3>当前文件</h3>

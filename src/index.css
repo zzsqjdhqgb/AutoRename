@@ -395,3 +395,25 @@ video {
   cursor: not-allowed;
   color: #9ca3af;
 }
+
+/* Processing State */
+.processing-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+  color: var(--text-color);
+  opacity: 0.8;
+}
+
+.loading-spinner {
+  font-size: 48px;
+  margin-bottom: 16px;
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
