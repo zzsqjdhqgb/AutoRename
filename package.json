@@ -1,6 +1,6 @@
 {
   "name": "autorename",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "description": "为专有用途定制的Windows桌面应用",
   "main": "main.js",
   "scripts": {
