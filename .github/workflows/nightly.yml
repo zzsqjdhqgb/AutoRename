@@ -3,7 +3,7 @@ name: Nightly Build
 on:
   push:
     branches:
-      - debug-actions
+      - master
 
 permissions:
   contents: write
