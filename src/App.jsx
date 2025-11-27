@@ -3,6 +3,11 @@ import Swal from 'sweetalert2';
 import Sidebar from './components/Sidebar';
 import VideoPreview from './components/VideoPreview';
 
+// Configure SweetAlert2 to not modify body height
+const MySwal = Swal.mixin({
+  heightAuto: false
+});
+
 function App() {
   const [currentFile, setCurrentFile] = useState(null);
   const [date, setDate] = useState('');
@@ -31,7 +36,7 @@ function App() {
         });
       } else {
         setCurrentFile(null);
-        Swal.fire({
+        MySwal.fire({
           title: '完成!',
           text: '没有更多文件需要处理了',
           icon: 'success',
@@ -40,7 +45,7 @@ function App() {
       }
     } catch (error) {
       console.error('Error loading file:', error);
-      Swal.fire({
+      MySwal.fire({
         title: '错误',
         text: '加载文件失败: ' + error.message,
         icon: 'error'
@@ -55,7 +60,7 @@ function App() {
   const handleConfirm = async () => {
     if (!currentFile || isProcessing) return;
     if (!date || !lessonNo) {
-      Swal.fire({
+      MySwal.fire({
         title: '提示',
         text: '请填写日期和课时序号',
         icon: 'warning',
@@ -75,7 +80,7 @@ function App() {
 
       if (result.success) {
         // Show success toast
-        const Toast = Swal.mixin({
+        const Toast = MySwal.mixin({
           toast: true,
           position: 'top-end',
           showConfirmButton: false,
@@ -92,13 +97,18 @@ function App() {
           title: '重命名成功'
         });
 
-        setLessonNo(''); 
+        // Auto increment lesson number (cycle 1-9)
+        const currentVal = parseInt(lessonNo || '0', 10);
+        let nextVal = currentVal + 1;
+        if (nextVal > 9) nextVal = 1;
+        setLessonNo(String(nextVal));
+        
         await loadNextFile();
       } else {
         throw new Error(result.error);
       }
     } catch (error) {
-      Swal.fire({
+      MySwal.fire({
         title: '错误!',
         text: error.message,
         icon: 'error',
@@ -128,14 +138,21 @@ function App() {
     const handleKeyDown = (e) => {
       if (isProcessing) return;
       
-      if (e.key === 'Escape') {
-        handleSkip();
+      // Ctrl+Enter to confirm
+      if ((e.ctrlKey || e.metaKey) && e.key === 'Enter') {
+        handleConfirm();
+      }
+
+      // F5 to refresh file list
+      if (e.key === 'F5') {
+        e.preventDefault();
+        loadNextFile();
       }
     };
 
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [isProcessing, currentFile, handleSkip]);
+  }, [isProcessing, currentFile, handleConfirm, loadNextFile]);
 
   return (
     <div className="container">
@@ -148,6 +165,7 @@ function App() {
         setLessonTag={setLessonTag}
         onConfirm={handleConfirm}
         onSkip={handleSkip}
+        onRefresh={loadNextFile}
         isProcessing={isProcessing}
       />
       <VideoPreview currentFile={currentFile} />
