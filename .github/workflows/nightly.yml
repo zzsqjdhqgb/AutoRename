@@ -3,7 +3,7 @@ name: Nightly Build
 on:
   push:
     branches:
-      - master
+      - debug-actions
 
 permissions:
   contents: write
@@ -31,6 +31,8 @@ jobs:
         run: pnpm install
 
       - name: Build
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }} # 1. 喂给它 Token 消除报错
         run: pnpm build -- -p never
 
       - name: Update Nightly Tag
