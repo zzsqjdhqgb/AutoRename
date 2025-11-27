@@ -3,10 +3,12 @@ import React from 'react';
 function VideoPreview({ currentFile }) {
   if (!currentFile) {
     return (
-      <div className="right-panel empty-state">
-        <div className="empty-icon">📂</div>
-        <h2>没有待处理的文件</h2>
-        <p>请将视频文件放入待处理文件夹</p>
+      <div className="right-panel">
+        <div className="empty-state">
+          <div className="empty-icon">📂</div>
+          <h2>没有待处理的文件</h2>
+          <p>请将视频文件放入待处理文件夹</p>
+        </div>
       </div>
     );
   }
