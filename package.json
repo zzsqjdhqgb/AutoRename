@@ -41,6 +41,7 @@
     ]
   },
   "build": {
+    "publish": null,
     "appId": "com.autorename.app",
     "productName": "AutoRename",
     "directories": {

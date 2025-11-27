@@ -31,7 +31,7 @@ jobs:
         run: pnpm install
 
       - name: Build
-        run: pnpm build -- -p never
+        run: pnpm build
 
       - name: Update Nightly Tag
         run: |
